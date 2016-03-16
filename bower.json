@@ -1,0 +1,31 @@
+{
+  "name": "gocd-buildwall",
+  "version": "1.0.7",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "seed"
+  ],
+  "main": "gocd-buildwall.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/vidal-community/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
+    "paper-card": "PolymerElements/paper-card#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.4",
+    "neon-animation": "PolymerElements/neon-animation#^1.1.1"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "^4.0.0"
+  }
+}

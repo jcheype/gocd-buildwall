@@ -1,0 +1,79 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../neon-animation/neon-animation.html">
+<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
+
+
+<dom-module id="gocd-buildwal-card">
+  <template>
+    <style>
+      :host {
+        --paper-card-header-text: {
+          font-size: 1.4em;
+          font-weight: bolder;
+        }
+        --paper-card: {
+          margin: 15px;
+          width: 350px;
+        }
+        --paper-card-header-color: #eee;
+      }
+
+      .Passed {
+        --paper-card-background-color: #00B945;
+      }
+
+      .Failed {
+        --paper-card-background-color: #FF2C00;
+      }
+
+      .Building,
+      .Cancelled {
+        --paper-card-background-color: #FF8500;
+      }
+
+      .None {
+        --paper-card-background-color: #AAA;
+      }
+
+      paper-card {}
+    </style>
+    <paper-card class$="{{getStatus(pipeline)}}" heading="{{pipeline.name}}">
+    </paper-card>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'gocd-buildwal-card',
+      behaviors: [Polymer.NeonAnimationRunnerBehavior],
+      properties: {
+        pipeline: Object,
+        animationConfig:{
+          value:function() {
+            return {
+              'entry' : {
+                name: 'scale-up-animation',
+                node: this
+              }
+            }
+          }
+        }
+      },
+      getStatus: function(pipeline) {
+        return pipeline.stage && pipeline.stage.status || "None";
+      }
+    });
+  </script>
+</dom-module>

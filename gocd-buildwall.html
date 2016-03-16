@@ -1,0 +1,103 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../neon-animation/neon-animation.html">
+<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="gocd-buildwall-card.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <gocd-buildwall></gocd-buildwall>
+
+Example:
+
+    <gocd-buildwall>
+      <h2>Hello gocd-buildwall</h2>
+    </gocd-buildwall>
+
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="gocd-buildwall">
+  <template>
+    <style>
+      :host {
+        display: block;
+        box-sizing: border-box;
+        background-color: #666;
+      }
+    </style>
+    <iron-ajax id="ajax" auto url="{{gocdApiUrl}}/api/dashboard" handle-as="json" headers='{"Accept": "application/vnd.go.cd.v1+json"}' last-response="{{dashboard}}"></iron-ajax>
+    <paper-styles>
+      <template is="dom-repeat" items="{{pipelines}}">
+        <gocd-buildwal-card pipeline="{{item}}"></gocd-buildwal-card>
+      </template>
+    </paper-styles>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'gocd-buildwall',
+
+      properties: {
+        gocdApiUrl: String,
+        refreshInterval: {
+          type: Number,
+          value: 15000
+        },
+        pipelines: {
+          type: Array,
+          computed: "computePipelines(dashboard)"
+        }
+      },
+      priorities: {
+        NoStateYet: 999,
+        Passed: 200,
+        Building: 150,
+        Cancelled: 100,
+        Failed: 0
+      },
+
+      ready: function() {
+        setInterval(() => {
+          this.$.ajax.generateRequest();
+        }, this.refreshInterval);
+      },
+      computePipelines: function(dashboard) {
+        var pipelines = dashboard._embedded.pipeline_groups.reduce((acc, pgroup) => {
+          return acc.concat(pgroup._embedded.pipelines);
+        }, []);
+
+        pipelines.forEach((pipeline) => {
+          var instance = pipeline._embedded.instances[0];
+          if (instance && instance._embedded.stages) {
+            var sortedStages = instance._embedded.stages.sort((s1, s2) => {
+              return this.properties[s1.status] - this.properties[s2.status];
+            });
+            pipeline.stage = sortedStages[0];
+          }
+        });
+        return pipelines;
+      },
+      getStatus: function(pipeline) {
+        return pipeline.stage && pipeline.stage.status || "None";
+      }
+    });
+  </script>
+</dom-module>
