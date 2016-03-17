@@ -12,14 +12,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../neon-animation/neon-animation.html">
-<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../neon-animation/animations/fade-in-animation.html">
 <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <gocd-buildwal-card></gocd-buildwal-card>
+
+Example:
+
+  <gocd-buildwal-card pipeline="{{item}}"></gocd-buildwal-card>
+
+
+@demo demo/index.html
+@hero hero.svg
+-->
 
 <dom-module id="gocd-buildwal-card">
   <template>
     <style>
       :host {
+        visibility: hidden;
         --paper-card-header-text: {
           font-size: 1.4em;
           font-weight: bolder;
@@ -32,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .Passed {
-        --paper-card-background-color: #00B945;
+        --paper-card-background-color: #038734;
       }
 
       .Failed {
@@ -45,31 +61,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .None {
-        --paper-card-background-color: #AAA;
+        --paper-card-background-color: #666;
       }
 
       paper-card {}
     </style>
-    <paper-card class$="{{getStatus(pipeline)}}" heading="{{pipeline.name}}">
+    <paper-card elevation="2" class$="{{getStatus(pipeline)}}" heading="{{pipeline.name}}">
     </paper-card>
   </template>
 
   <script>
     Polymer({
       is: 'gocd-buildwal-card',
-      behaviors: [Polymer.NeonAnimationRunnerBehavior],
+      behaviors: [
+        Polymer.NeonAnimatableBehavior,
+        Polymer.NeonAnimationRunnerBehavior
+      ],
       properties: {
         pipeline: Object,
-        animationConfig:{
-          value:function() {
+        animationConfig: {
+          type: Object,
+          value: function() {
             return {
-              'entry' : {
-                name: 'scale-up-animation',
-                node: this
-              }
+              'entry': [{
+                name: 'fade-in-animation',
+                node: this,
+                timing:{
+                  duration: 2000
+                }
+              }]
             }
           }
         }
+      },
+      listeners: {
+        'neon-animation-finish': '_onNeonAnimationFinish'
+      },
+      ready: function() {
+          this.style.visibility = 'visible';
+          this.playAnimation('entry');
+      },
+      _onNeonAnimationFinish: function() {
+        console.log('animation done!');
       },
       getStatus: function(pipeline) {
         return pipeline.stage && pipeline.stage.status || "None";

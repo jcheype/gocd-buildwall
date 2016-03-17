@@ -10,13 +10,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 
+
 <link rel="import" href="../iron-ajax/iron-ajax.html">
-<link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../neon-animation/neon-animation.html">
-<link rel="import" href="../neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="gocd-buildwall-card.html">
+
 <!--
 An element providing a solution to no problem in particular.
 
@@ -26,9 +24,8 @@ Example:
 
 Example:
 
-    <gocd-buildwall>
-      <h2>Hello gocd-buildwall</h2>
-    </gocd-buildwall>
+    <gocd-buildwall gocd-api-url="http://gocd.dockerbo.vidal.net/go"></gocd-buildwall>
+
 
 @demo demo/index.html
 @hero hero.svg
@@ -40,12 +37,12 @@ Example:
       :host {
         display: block;
         box-sizing: border-box;
-        background-color: #666;
+        background-color: #333333;
       }
     </style>
     <iron-ajax id="ajax" auto url="{{gocdApiUrl}}/api/dashboard" handle-as="json" headers='{"Accept": "application/vnd.go.cd.v1+json"}' last-response="{{dashboard}}"></iron-ajax>
     <paper-styles>
-      <template is="dom-repeat" items="{{pipelines}}">
+      <template is="dom-repeat" items="{{_pipelines}}">
         <gocd-buildwal-card pipeline="{{item}}"></gocd-buildwal-card>
       </template>
     </paper-styles>
@@ -56,17 +53,23 @@ Example:
       is: 'gocd-buildwall',
 
       properties: {
+        /**
+         * URL to GO CD server
+         */
         gocdApiUrl: String,
+        /**
+         * Refreshing interval for buildwall
+         */
         refreshInterval: {
           type: Number,
           value: 15000
         },
-        pipelines: {
+        _pipelines: {
           type: Array,
-          computed: "computePipelines(dashboard)"
+          computed: "_computePipelines(dashboard)"
         }
       },
-      priorities: {
+      _priorities: {
         NoStateYet: 999,
         Passed: 200,
         Building: 150,
@@ -79,7 +82,7 @@ Example:
           this.$.ajax.generateRequest();
         }, this.refreshInterval);
       },
-      computePipelines: function(dashboard) {
+      _computePipelines: function(dashboard) {
         var pipelines = dashboard._embedded.pipeline_groups.reduce((acc, pgroup) => {
           return acc.concat(pgroup._embedded.pipelines);
         }, []);
@@ -88,15 +91,12 @@ Example:
           var instance = pipeline._embedded.instances[0];
           if (instance && instance._embedded.stages) {
             var sortedStages = instance._embedded.stages.sort((s1, s2) => {
-              return this.properties[s1.status] - this.properties[s2.status];
+              return this._priorities[s1.status] - this._priorities[s2.status];
             });
             pipeline.stage = sortedStages[0];
           }
         });
         return pipelines;
-      },
-      getStatus: function(pipeline) {
-        return pipeline.stage && pipeline.stage.status || "None";
       }
     });
   </script>
